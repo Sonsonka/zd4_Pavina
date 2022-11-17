@@ -2,7 +2,6 @@ package database
 
 import androidx.room.TypeConverter
 import java.util.*
-import java.util.Date
 
 class CrimeTypeConverters {
 

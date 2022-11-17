@@ -3,10 +3,10 @@ package database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.zd4_pavina.Crime
+import com.example.zd3_pavina.Crime
 
 @Database(entities = [Crime::class],
-version=1, exportSchema = false)
+    version=1, exportSchema = false)
 @TypeConverters(CrimeTypeConverters::class)
 abstract class CrimeDatabase : RoomDatabase() {
 
