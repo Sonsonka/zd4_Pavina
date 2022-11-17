@@ -73,7 +73,8 @@ class CrimeListFragment : Fragment() {
             viewLifecycleOwner as LifecycleOwner,
             Observer { crimes ->
                 crimes?.let { Log.i(TAG, "Got crimes ${crimes.size}")
-                    updateUI(crimes)}
+                   adapter?.submitList(it)
+                }
             }
         )
     }
