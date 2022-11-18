@@ -1,5 +1,6 @@
 package com.example.zd3_pavina
 
+import android.app.Activity
 import android.arch.lifecycle.LifecycleOwner
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -16,7 +17,11 @@ import androidx.lifecycle.ViewModelProviders
 import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.net.Uri
+import android.os.Build
 import android.provider.ContactsContract
+import android.support.annotation.RequiresApi
 import android.text.format.DateFormat
 import androidx.fragment.app.FragmentManager
 
@@ -140,6 +145,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks{
             setOnClickListener {
                 startActivityForResult(pickContactIntent, REQUEST_DATE)
             }
+
         }
         var pickContact = Intent(Intent.ACTION_PICK,ContactsContract.Contacts.CONTENT_URI)
         var packageManager = activity?.packageManager
@@ -168,6 +174,33 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks{
         }
         if (crime.mSuspect.isNotEmpty()){
             chooseButton.text=crime.mSuspect
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when{
+            resultCode!= Activity.RESULT_OK -> return
+            requestCode== REQUEST_CONTACT && data !=null ->{
+                val contactUri: Uri? =data.data
+                val queryFields=arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+                val cursor =
+                    contactUri?.let {
+                        requireActivity().contentResolver.query(it,queryFields,null,
+                            null)
+                    }
+                cursor?.use {
+                    if (it.count==0){
+                        return
+                    }
+                    it.moveToFirst()
+                    val suspect=it.getString(0)
+                    crime.mSuspect=suspect
+                    crimeDetailViewModel.saveCrime(crime)
+                    chooseButton.text=suspect
+                }
+
+            }
         }
     }
 
