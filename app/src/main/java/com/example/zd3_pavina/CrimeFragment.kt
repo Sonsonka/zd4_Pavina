@@ -25,13 +25,18 @@ import java.util.*
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id"
 private const val DIALOG_DATE = "DialogDate"
+private const val DIALOG_TIME="DialogTime"
 private const val REQUEST_DATE =0
+private const val REQUEST_TIME=0
 private const val DATE_FORMAT = "EEE, MMM, dd"
 class CrimeFragment : Fragment(), DatePickerFragment.Callbacks{
     private lateinit var crime: Crime
     private lateinit var titleField: EditText
     private lateinit var dateButton: Button
+    private lateinit var timeButton: Button
     private lateinit var solvedCheckBox: CheckBox
+    private lateinit var chooseButton: Button
+    private lateinit var sendButton: Button
 
 
     private val crimeDetailViewModel : CrimeDetailViewModel by lazy {
@@ -57,7 +62,10 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks{
         val view = inflater.inflate(R.layout.fragment_crime, container, false)
         titleField = view.findViewById(R.id.crime_title) as EditText
         dateButton = view.findViewById(R.id.crime_date) as Button
+        timeButton = view.findViewById(R.id.crime_time) as Button
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
+        sendButton =view.findViewById(R.id.crime_report) as Button
+        chooseButton =view.findViewById(R.id.crime_suspect) as Button
         return view
     }
 
@@ -108,6 +116,36 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks{
                 show(this@CrimeFragment.requireFragmentManager() as FragmentManager, DIALOG_DATE)
             }
         }
+        timeButton.setOnClickListener {
+            TimePickerFragment.newInstance(crime.mDate).apply{
+                setTargetFragment(this@CrimeFragment, REQUEST_TIME)
+                show(this@CrimeFragment.requireFragmentManager() as FragmentManager, DIALOG_TIME)
+            }
+        }
+        sendButton.setOnClickListener {
+            Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, getCrimeReport())
+                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject))
+            }.also {intent ->
+                val choserIntent = Intent.createChooser(intent, getString(R.string.sent_report))
+                startActivity(choserIntent)
+            }
+        }
+        chooseButton.apply {
+            val pickContactIntent =
+                Intent(Intent.ACTION_PICK,
+                    ContactsContract.Contacts.CONTENT_URI)
+
+            setOnClickListener {
+                startActivityForResult(pickContactIntent, REQUEST_DATE)
+            }
+        }
+        var pickContact = Intent(Intent.ACTION_PICK,ContactsContract.Contacts.CONTENT_URI)
+        var packageManager = activity?.packageManager
+        if(packageManager?.resolveActivity(pickContact,PackageManager.MATCH_DEFAULT_ONLY) == null){
+            sendButton.isEnabled = false
+        }
 
     }
 
@@ -127,6 +165,9 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks{
         solvedCheckBox.apply {
             isChecked = crime.mSolved
             jumpDrawablesToCurrentState()
+        }
+        if (crime.mSuspect.isNotEmpty()){
+            chooseButton.text=crime.mSuspect
         }
     }
 
