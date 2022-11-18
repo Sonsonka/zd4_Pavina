@@ -8,8 +8,9 @@ import java.util.*
 data class Crime(@PrimaryKey val mId: UUID = UUID.randomUUID(),
                  public var mTitle: String? = "",
                  var mDate: Date = Date(),
-                 var mSolved: Boolean = false) {
-    private var mSuspect: String? = null
+                 var mSolved: Boolean = false,
+                 var mSuspect: String = "") {
+
 
 
     private var mRequestPolice= false
